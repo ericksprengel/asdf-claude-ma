@@ -2,52 +2,73 @@
 
 # asdf-claude-ma [![Build](https://github.com/ericksprengel/asdf-claude-ma/actions/workflows/build.yml/badge.svg)](https://github.com/ericksprengel/asdf-claude-ma/actions/workflows/build.yml) [![Lint](https://github.com/ericksprengel/asdf-claude-ma/actions/workflows/lint.yml/badge.svg)](https://github.com/ericksprengel/asdf-claude-ma/actions/workflows/lint.yml)
 
-[claude-ma](https://github.com/anthropics/claude-code) plugin for the [asdf version manager](https://asdf-vm.com).
+[asdf-claude-ma](https://github.com/ericksprengel/asdf-claude-ma) plugin for the [asdf version manager](https://asdf-vm.com).
 
 </div>
 
+This is an [asdf](https://asdf-vm.com) plugin, but it is **not** for managing software versions. It is for **multi-account (ma)**: you use asdf’s per-directory `.tool-versions` mechanism so each workspace can switch which Claude account profile is active. In short, it lets you manage multiple Claude accounts through the same asdf workflow you already use for tools.
+
+**This plugin does not install Claude Code.** It is only a thin wrapper so you can keep separate credentials and config per labeled account. Aside from [installing Claude Code yourself](#important-setup-notes), the plugin does not add other dependencies.
+
 # Contents
 
-- [Dependencies](#dependencies)
 - [Install](#install)
+- [Important setup notes](#important-setup-notes)
+- [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
-
-# Dependencies
-
-**TODO: adapt this section**
-
-- `bash`, `curl`, `tar`, and [POSIX utilities](https://pubs.opengroup.org/onlinepubs/9699919799/idx/utilities.html).
-- `SOME_ENV_VAR`: set this environment variable in your shell config to load the correct version of tool x.
 
 # Install
 
 Plugin:
 
 ```shell
-asdf plugin add claude-ma
-# or
 asdf plugin add claude-ma https://github.com/ericksprengel/asdf-claude-ma.git
 ```
 
-claude-ma:
+There is no “latest version” to install in the usual asdf sense: the value you set is an **account label** (any name you choose), not a semver.
 
-```shell
-# Show all installable versions
-asdf list-all claude-ma
+# Important setup notes
 
-# Install specific version
-asdf install claude-ma latest
+1. **Install Claude Code separately.** This plugin does not download or install the `claude` CLI. Follow Anthropic’s [Get started](https://github.com/anthropics/claude-code?tab=readme-ov-file#get-started) steps first.
 
-# Set a version globally (on your ~/.tool-versions file)
-asdf global claude-ma latest
+2. **How isolation works.** Under the hood, the plugin sets [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/en/authentication#credential-management) to a per-label directory (for example `~/.claude-<label>`), then runs the real `claude` binary. Each entry in `.tool-versions` is therefore a separate config home, which is how Claude Code keeps OAuth and related settings apart per profile.
 
-# Now claude-ma commands are available
-claude --version
+3. **Where credentials live.** Claude Code’s behavior for keychain vs file storage and overrides is described under [Credential management](https://code.claude.com/docs/en/authentication#credential-management) in the official authentication docs.
+
+# Usage
+
+In each project or directory, set the account name in `.tool-versions`:
+
+```text
+claude-ma personal
 ```
 
-Check [asdf](https://github.com/asdf-vm/asdf) readme for more instructions on how to
-install & manage versions.
+`personal` is only an example; use any label you like.
+
+Examples for different spaces:
+
+**Company workspace** — `src/Projects/my-company/.tool-versions`:
+
+```text
+claude-ma my-company
+```
+
+**Personal workspace** — `src/Projects/personal/.tool-versions`:
+
+```text
+claude-ma personal
+```
+
+**University workspace** — `src/Projects/my-university/.tool-versions`:
+
+```text
+claude-ma my-university
+```
+
+The Claude CLI will prompt you to log in separately for each account profile when you use it in that context.
+
+See the [asdf](https://github.com/asdf-vm/asdf) documentation for how `.tool-versions` and directory-local tool configuration work.
 
 # Contributing
 
